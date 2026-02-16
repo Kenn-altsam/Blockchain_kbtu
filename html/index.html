@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DApp Message</title>
+</head>
+<body>
+
+<h2>Stored Message:</h2>
+<p id="message">Loading...</p>
+
+<input id="newMessage" placeholder="New message"/>
+<button onclick="updateMessage()">Update</button>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+
+<script>
+
+const contractAddress = "0xF6Cea2Dbbd1f2a42453D3C9bBAD45A5041135C97";
+const abi = [
+  "function message() view returns (string)",
+  "function updateMessage(string memory _newMessage)"
+];
+
+let provider;
+let signer;
+let contract;
+
+async function connect() {
+
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+
+    signer = await provider.getSigner();
+    contract = new ethers.Contract(contractAddress, abi, signer);
+
+    loadMessage();
+}
+
+async function loadMessage() {
+    const msg = await contract.message();
+    document.getElementById("message").innerText = msg;
+}
+
+async function updateMessage() {
+
+    const newMsg = document.getElementById("newMessage").value;
+
+    const tx = await contract.updateMessage(newMsg);
+    await tx.wait();
+
+    loadMessage();
+}
+
+connect();
+
+</script>
+
+</body>
+</html>
